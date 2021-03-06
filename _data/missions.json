@@ -1,0 +1,94 @@
+{
+  "name": "Earth",
+  "children": [
+    {
+      "name": "Moon",
+      "icon": "./_images/moon.png",
+      "children": [
+        { "name": "Lunar Ranger" },
+        { "name": "Lunar Orbiter" },
+        { "name": "Lunar Surveyor" },
+        { "name": "Lunar Prospector" },
+        { "name": "GRAIL" },
+        { "name": "Lunar Exploration Program" },
+        { "name": "LADEE" }
+      ]
+    },
+    {
+      "name": "Venus",
+      "icon": "./_images/venus.png",
+      "children": [
+        { "name": "Mariner 1 & 2" },
+        { "name": "Mariner 1 & 2 LV" },
+        { "name": "Mariner Mariner 5" },
+        { "name": "Mariner 5 LV" },
+        { "name": "Pioneer Venus" },
+        { "name": "Magellan" }
+      ]
+    },
+    {
+      "name": "Mars",
+      "icon": "./_images/mars.png",
+      "children": [
+        { "name": "Mariner 3 & 4" },
+        { "name": "Mariner 6 & 7" },
+        { "name": "Early Mariner LVs" },
+        { "name": "Mariner 8 & 9" },
+        { "name": "Viking" },
+        { "name": "Mars Data Analysis" },
+        { "name": "Mars Observer" },
+        { "name": "Mars '94 NASA Cont." },
+        { "name": "Mars Pathfinder" },
+        { "name": "Mars Exploration Program" },
+        { "name": "InSight" },
+        { "name": "Mars Perseverance" },
+        { "name": "Mars Odyssey" },
+        { "name": "MSL Curiosity" },
+        { "name": "MAVEN" },
+        { "name": "Mars MER: Sprit & Opportunity" },
+        { "name": "Mars Global Surveyor" },
+        { "name": "Mars Organic Molecule Analyzer - future" },
+        { "name": "Mars Polar Lander/Mars Climate Orbiter - lost" },
+        { "name": "Phoenix" }
+      ]
+    },
+    {
+      "name": "Mercury",
+      "icon": "./_images/mercury.png",
+      "children": [
+        { "name": "Mariner 10" },
+        { "name": "MESSENGER" }
+      ]
+    },
+    {
+      "name": "Outer Planets",
+      "icon": "./_images/saturn.png",
+      "children": [
+        { "name": "Pioneer 10 & 11" },
+        { "name": "Voyager" },
+        { "name": "Galileo" },
+        { "name": "Cassini" },
+        { "name": "Juno" },
+        { "name": "Outer Planets Program" },
+        { "name": "Europa Clipper" }
+      ]
+    },
+    {
+      "name": "Small Bodies",
+      "icon": "./_images/pluto.png",
+      "children": [
+        { "name": "NEAR" },
+        { "name": "Stardust" },
+        { "name": "DS1" },
+        { "name": "CONTOUR" },
+        { "name": "Deep Impact" },
+        { "name": "Dawn" },
+        { "name": "New Horizons" },
+        { "name": "OSIRIS-REx" },
+        { "name": "Lucy" },
+        { "name": "Psyche" },
+        { "name": "Genesis" }
+      ]
+    }
+      ]
+};

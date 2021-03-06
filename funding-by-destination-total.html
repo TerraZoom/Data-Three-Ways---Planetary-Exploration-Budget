@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Funding By Planetary Destination - Total</title>
+
+        <!--  // CREDITS/DISCLAIMERS ***********
+        // SOME CODE SOURCED AND INSPIRED FROM D3 Tips and Tricks v6.x: Interactive Data Visualization in a Web Browser by Malcolm Maclean 2020
+        // SOME CODE SOURCED HERE - https://www.webtips.dev/how-to-make-interactive-bubble-charts-in-d3-js
+        // I tried to follow this tutorial to build a bubble chart to describe Funding by Planetary Destination - Total.
+        // I'm a believer in typing out code (not copy and pasting) just to get a feel for what's happening
+        // unfortunately, this code was not working even with a few different troubleshooting steps. Downloading the author's git repo still did not help.
+        // in the end, this chart was built in Illustrator using the data that I massaged from the Planetary Society's Planetary Budget Dataset.
+
+        // END CREDITS/DISCLAIMERS *******************
+        -->
+
+        <script src="_js/d3.min.js"></script>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+  <body>
+  <h1> Comparison of Total Funding by Destination </h1>
+  <!-- load the d3.js library -->
+
+  <svg id="bubble-chart"></svg>
+  <div class="tooltip">
+      <img alt="" />
+      <div>
+          <a></a>
+          <span></span>
+      </div>
+  </div>
+
+  <script>
+
+    // load Data
+    // I could use this JSON, but I've put it in an external file for experience; even though it's small
+    // set the radius of the circle to the total spending (total/100*2) - largest number will be 286*2
+    /* const dataset = [
+      {destination: "Moon", total:13187.35 },
+      {destination: "Mars", total:28624.9 },
+      {destination: "Mercury", total:1495.4 },
+      {destination: "Venus", total:3645.8 },
+      {destination: "Outer Planets", total:19324.7437 },
+      {destination: "Small Bodies", total:6347.0582 }
+    ];
+    */
+
+    // const file = '_data/funding_by_destination_total.json';
+
+    const generateChart = data => {
+      const bubble = data => d3.pack()
+          .size([width, height])
+          .padding(6)(d3.hierarchy({ children: data }).sum(d => d.score));
+
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+          const colors = {
+            // from funding by destination.html - "#4E4D49","#fA825B","#c1c1c1","#AB926A","#3E2B1A","#647EB3"
+              moon: '#4E4D49',
+              mars: '#FA825B',
+              mercury: '#C1C1C1',
+              venus: '#AB926A',
+              outer: '#3E2B1A',
+              small: '#647EB3'
+          };
+
+          const root = bubble(data);
+          const svg = d3.select('#bubble-chart')
+              .style('width', width)
+              .style('height', height);
+
+              const tooltip = d3.select('.tooltip');
+
+              const node = svg.selectAll()
+                  .data(root.children)
+                  .enter().append('g')
+                  .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+              const circle = node.append('circle')
+                  .style('fill', d => colors[d.data.category])
+                  .on('mouseover', function (e, d) {
+                      tooltip.select('img').attr('src', d.data.img);
+                      tooltip.select('a').attr('href', d.data.link).text(d.data.name);
+                      tooltip.select('span').attr('class', d.data.category).text(d.data.category);
+                      tooltip.style('visibility', 'visible');
+
+                      d3.select(this).style('stroke', '#222');
+                  })
+                  .on('mousemove', e => tooltip.style('top', `${e.pageY}px`)
+                                               .style('left', `${e.pageX + 10}px`))
+                  .on('mouseout', function () {
+                      d3.select(this).style('stroke', 'none');
+                      return tooltip.style('visibility', 'hidden');
+                  })
+                  .on('click', (e, d) => window.open(d.data.link));
+
+              const label = node.append('text')
+                  .attr('dy', 2)
+                  .text(d => d.data.destination.substring(0, d.r / 3));
+
+              node.transition()
+                  .ease(d3.easeExpInOut)
+                  .duration(1000)
+                  .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+              circle.transition()
+                  .ease(d3.easeExpInOut)
+                  .duration(1000)
+                  .attr('r', d => d.r);
+
+              label.transition()
+                  .delay(700)
+                  .ease(d3.easeExpInOut)
+                  .duration(1000)
+                  .style('opacity', 1)
+     };
+
+     const data = [
+       { destination: "Moon", category:"moon", total:13187.35, score:264, link:"/", img:"#" },
+       { destination: "Mars", category:"mars", total:28624.9, score:572, link:"/", img:"#" },
+       { destination: "Mercury", category:"mercury", total:1495.4, score:28, link:"/", img:"#"  },
+       { destination: "Venus", category:"venus", total:3645.8, score:72, link:"/", img:"#" },
+       { destination: "Outer Planets", category:"outer", total:19324.7437, score:386, link:"/", img:"#" },
+       { destination: "Small Bodies", category:"small", total:6347.0582, score:128, link:"/", img:"#" }
+     ]
+
+     generateChart(data);
+
+     // (async () => {
+         // data = await d3.json(file).then(data => data);
+         // generateChart(data);
+     // })
+    // ();
+
+  </script>
+  </body>
+</html>

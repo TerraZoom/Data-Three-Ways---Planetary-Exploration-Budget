@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<!--  // CREDITS/DISCLAIMERS ***********
+// SOME CODE SOURCED AND INSPIRED FROM D3 Tips and Tricks v6.x: Interactive Data Visualization in a Web Browser by Malcolm Maclean 2020
+REFERENCE: // d3 Gallery Example - https://www.d3-graph-gallery.com/connectedscatter.html
+// The core of this project based on our in-class follow along as well as a previous d3.js visualization I had written in the past
+// ultimately, I should have refactored this better. There are some misleading variables and code that is unused.
+// In this example, the csv dataset was adapted from the Planetary Budget dataset and reordered to give a consistent output for the
+// multiline visualization. Using d3.js gallery examples, I added a background grid and tried to add tooltips. Not entirely successful.
+// Data source: the Planetary Society's Planetary Budget Dataset.
+
+// END CREDITS/DISCLAIMERS *******************
+-->
+
+
+<style> /* set the CSS */
+
+body { font: 12px Arial;}
+
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.legend {
+    font-size: 16px;
+    font-weight: bold;
+    text-anchor: middle;
+}
+
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+</style>
+<body>
+
+<!-- load the d3.js library -->
+<script src="_js/d3.min.js"></script>
+
+<script>
+
+// Set the dimensions of the canvas / graph
+var margin = {top: 30, right: 20, bottom: 70, left: 50},
+    width = 1024 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+// Parse the date / time
+var parseDate = d3.timeParse("%Y");
+var formatDate = d3.timeFormat("%Y");
+var bisectDate = d3.bisector(function(d) { return d.year; }).left;
+
+// Set the ranges
+var x = d3.scaleTime().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+
+// Define the line
+var priceline = d3.line()
+    .x(function(d) { return x(d.year); })
+    .y(function(d) { return y(d.funding); });
+
+// Adds the svg canvas
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+  // gridlines in x axis function
+  function make_x_gridlines() {
+      return d3.axisBottom(x)
+          .ticks(5)
+  }
+
+  // gridlines in y axis function
+  function make_y_gridlines() {
+      return d3.axisLeft(y)
+          .ticks(5)
+  }
+
+  // Adding a separate group to 'layer' the objects
+  var lineSvg = svg.append("g");
+
+  var focus = svg.append("g")
+      .style("display", "none");
+
+// Get the data
+d3.csv("_data/funding_by_destination.csv").then(function(data) {
+
+    data.forEach(function(d) {
+		d.year = parseDate(d.year);
+		d.funding = +d.funding;
+    });
+
+    // Scale the range of the data
+    x.domain(d3.extent(data, function(d) { return d.year; }));
+    y.domain([0, d3.max(data, function(d) { return d.funding; })]);
+
+    // Group the entries by destination
+    dataNest = Array.from(
+	    d3.group(data, d => d.destination), ([key, value]) => ({key, value})
+	);
+
+    // set the color scale
+    // standard scheme setting (we won't use this)
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // I want to use my own colors for the titles and lines
+    var titleColors = d3.scaleOrdinal(["#4E4D49","#fA825B","#c1c1c1","#AB926A","#3E2B1A","#647EB3"]);
+    legendSpace = width/dataNest.length; // spacing for the legend
+
+    // Loop through each destination / key
+    dataNest.forEach(function(d,i) {
+
+        svg.append("path")
+            .attr("class", "line")
+            .style("stroke", function() { // Add the colours dynamically
+                return d.color = titleColors(d.key); })
+            .attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign an ID
+            .attr("d", priceline(d.value));
+
+        // Add the Legend
+        svg.append("text")
+            .attr("x", (legendSpace/2)+i*legendSpace)  // space legend
+            .attr("y", height + (margin.bottom/2)+ 5)
+            .attr("class", "legend")    // style the legend
+            .style("fill", function() { // Add the colours dynamically
+                return d.color = titleColors(d.key); })
+            .on("click", function(){
+                // Determine if current line is visible
+                var active   = d.active ? false : true,
+                newOpacity = active ? 0 : 1;
+                // Hide or show the elements based on the ID
+                d3.select("#tag"+d.key.replace(/\s+/g, ''))
+                    .transition().duration(100)
+                    .style("opacity", newOpacity);
+                // Update whether or not the elements are active
+                d.active = active;
+                })
+            .text(d.key);
+
+    });
+
+  // Add the X Axis
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  // Add the Y Axis
+  svg.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(y));
+
+      // add the X gridlines
+      svg.append("g")
+          .attr("class", "grid")
+          .attr("transform", "translate(0," + height + ")")
+          .call(make_x_gridlines()
+              .tickSize(-height)
+              .tickFormat("")
+          )
+
+    // add the Y gridlines
+    svg.append("g")
+        .attr("class", "grid")
+        .call(make_y_gridlines()
+            .tickSize(-width)
+            .tickFormat("")
+        )
+
+        // append the x line
+        focus.append("path")
+            .attr("class", "x")
+            .style("stroke", "blue")
+            .style("stroke-dasharray", "3,3")
+            .style("opacity", 0.5)
+            .attr("y1", 0)
+            .attr("y2", height);
+
+        // append the y line
+        focus.append("path")
+            .attr("class", "y")
+            .style("stroke", "blue")
+            .style("stroke-dasharray", "3,3")
+            .style("opacity", 0.5)
+            .attr("x1", width)
+            .attr("x2", width);
+
+        /*
+
+        // append the circle at the intersection
+        focus.append("circle")
+            .attr("class", "y")
+            .style("fill", "none")
+            .style("stroke", "blue")
+            .attr("r", 4);
+
+          // place the value at the intersection
+          focus.append("text")
+              .attr("class", "y1")
+              .style("stroke", "white")
+              .style("stroke-width", "3.5px")
+              .style("opacity", 0.8)
+              .attr("dx", 8)
+              .attr("dy", "-.3em");
+          focus.append("text")
+              .attr("class", "y2")
+              .attr("dx", 8)
+              .attr("dy", "-.3em");
+
+          // place the date at the intersection
+          focus.append("text")
+              .attr("class", "y3")
+              .style("stroke", "white")
+              .style("stroke-width", "3.5px")
+              .style("opacity", 0.8)
+              .attr("dx", 8)
+              .attr("dy", "1em");
+          focus.append("text")
+              .attr("class", "y4")
+              .attr("dx", 8)
+              .attr("dy", "1em");
+
+        // append the rectangle to capture mouse
+        svg.append("rect")
+            .attr("width", width)
+            .attr("height", height)
+            .style("fill", "none")
+            .style("pointer-events", "all")
+            .on("mouseover", function() { focus.style("display", null); })
+            .on("mouseout", function() { focus.style("display", "none"); })
+            .on("mousemove", mousemove);
+
+    function mousemove() {
+      console.log("move")
+      var x0 = x.invert(d3.pointer(event,this)[0]),
+    	  i = bisectDate(data, x0, 1),
+    	  d0 = data[i - 1],
+    	  d1 = data[i],
+    	  d = x0 - d0.year > d1.year - x0 ? d1 : d0;
+
+    focus.select("circle.y")
+       .attr("transform",
+             "translate(" + x(d.year) + "," +
+                            y(d.funding) + ")");
+
+    	focus.select("text.y1")
+    	    .attr("transform",
+    	          "translate(" + x(d.year) + "," +
+    	                         y(d.funding) + ")")
+    	    .text(d.funding);
+
+    	focus.select("text.y2")
+    	    .attr("transform",
+    	          "translate(" + x(d.year) + "," +
+    	                         y(d.funding) + ")")
+    	    .text(d.funding);
+
+    	focus.select("text.y3")
+    	    .attr("transform",
+    	          "translate(" + x(d.year) + "," +
+    	                         y(d.funding) + ")")
+    	    .text(formatDate(d.year));
+
+    	focus.select("text.y4")
+    	    .attr("transform",
+    	          "translate(" + x(d.year) + "," +
+    	                         y(d.funding) + ")")
+    	    .text(formatDate(d.year));
+
+    	focus.select(".x")
+    	    .attr("transform",
+    	          "translate(" + x(d.year) + "," +
+    	                         y(d.funding) + ")")
+    	               .attr("y2", height - y(d.funding));
+
+    	focus.select(".y")
+    	    .attr("transform",
+    	          "translate(" + width * -1 + "," +
+    	                         y(d.funding) + ")")
+    	               .attr("x2", width + width);
+
+    }
+    */
+
+
+});
+
+</script>
+</body>

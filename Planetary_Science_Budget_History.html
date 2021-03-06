@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<!--  // CREDITS/DISCLAIMERS ***********
+// The core of this project based on our in-class follow along
+// I had made a huge error in confusing my date variable. I had named it year and left it out of a couple of functions.
+// Thanks Danielle for pointing me in the right direction for this example.
+// also had a completely weird result in the x-axis where part of the year would show but not totally correctly.
+// Adding a parseTime function to %Y solved that issue. It seems the number should have been a date.
+// SOME CODE SOURCED AND INSPIRED FROM D3 Tips and Tricks v6.x: Interactive Data Visualization in a Web Browser by Malcolm Maclean 2020
+REFERENCE: // d3 Gallery Example - https://www.d3-graph-gallery.com/connectedscatter.html
+
+// END CREDITS/DISCLAIMERS *******************
+-->
+
+
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+</style>
+<body>
+
+<h1> Planetary Science Budget 1960-2025 </h1>
+<!-- load the d3.js library -->
+<script src="_js/d3.min.js"></script>
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// parse the date / time - corrects the x-axis problem
+var parseTime = d3.timeParse("%Y");
+
+// set the ranges
+var x = d3.scaleTime().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+
+// define the 1st line
+var requestLine = d3.line()
+    .x(function(d) { return x(d.year); })
+    .y(function(d) { return y(d.request); });
+
+// define the 2nd line
+var actualLine = d3.line()
+    .x(function(d) { return x(d.year); })
+    .y(function(d) { return y(d.actual); });
+
+// append the svg obgect to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// Get the data
+d3.csv("_data/Planetary_Science_Budget_History.csv").then(function(data) {
+
+  // format the data
+  data.forEach(function(d) {
+      d.year = parseTime(d.year); // I gotta get back in time!
+      d.request = +d.request;
+      d.actual = +d.actual;
+      console.log("year: " + d.year + " | " + d.request + " | " + d.actual)
+  });
+
+  // Scale the range of the data
+  x.domain(d3.extent(data, function(d) { return d.year; }));
+  y.domain([0, d3.max(data, function(d) {
+	  return Math.max(d.request, d.actual); })]);
+
+  // Add the requestline path.
+  svg.append("path")
+      .data([data])
+      .attr("class", "line")
+      .attr("d", requestLine);
+
+  // Add the actualline path.
+ svg.append("path")
+      .data([data])
+      .attr("class", "line")
+      .style("stroke", "red")
+      .attr("d", actualLine);
+
+  // Add the X Axis
+  svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  // Add the Y Axis
+  svg.append("g")
+      .call(d3.axisLeft(y));
+
+});
+
+</script>
+</body>
